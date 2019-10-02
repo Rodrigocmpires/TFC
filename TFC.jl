@@ -367,27 +367,27 @@ Graf_Portifolio
 
 
 
-Curva_Parametros_Temporais = plot(1:Numero_de_meses,[Preco_Spot,Geracao_Estimada[1,:],Custo_Geracao],
-    title="Parametros Temporais",
-    label=["Preco Spot", "Geracao Estimada", "Custo de Geracao"])
-savefig(Curva_Parametros_Temporais,"C:\\Users\\rodri\\github\\TFC\\Curva_Parametros_Temporais.png")
-
-Curva_Parametros_Contrato = plot(1:Numero_de_contratos,[[p],[q]],
-    title="Parametros de contrato",
-    label=["Preco do Contrato", "Carga contratado"])
-savefig(Curva_Parametros_Contrato,"C:\\Users\\rodri\\github\\TFC\\Curva_Parametros_Contrato.png")
-######################################################################################
-######################################################################################
-
-Dados_Contratos = CSV.read("C:\\Users\\rodri\\github\\TFC\\CSV\\Contratos_DB.csv",header = true);
-Dados_Estimados = CSV.read("C:\\Users\\rodri\\github\\TFC\\CSV\\Estimados_DB.csv",header = true);
-
-######## Variaveis vinculadas ao contrato (i)
-Data_Ini = Dados_Contratos[1:Numero_de_contratos,1]
-Duracao = Dados_Contratos[1:Numero_de_contratos,2]
-
-Dados_Estimados
-
-mes = Dados_Estimados[:,5]
-mes + Dates.Month(12)
-Dados_Estimados[1:2,1]
+# Curva_Parametros_Temporais = plot(1:Numero_de_meses,[Preco_Spot,Geracao_Estimada[1,:],Custo_Geracao],
+#     title="Parametros Temporais",
+#     label=["Preco Spot", "Geracao Estimada", "Custo de Geracao"])
+# savefig(Curva_Parametros_Temporais,"C:\\Users\\rodri\\github\\TFC\\Curva_Parametros_Temporais.png")
+#
+# Curva_Parametros_Contrato = plot(1:Numero_de_contratos,[[p],[q]],
+#     title="Parametros de contrato",
+#     label=["Preco do Contrato", "Carga contratado"])
+# savefig(Curva_Parametros_Contrato,"C:\\Users\\rodri\\github\\TFC\\Curva_Parametros_Contrato.png")
+# ######################################################################################
+# ######################################################################################
+#
+# Dados_Contratos = CSV.read("C:\\Users\\rodri\\github\\TFC\\CSV\\Contratos_DB.csv",header = true);
+# Dados_Estimados = CSV.read("C:\\Users\\rodri\\github\\TFC\\CSV\\Estimados_DB.csv",header = true);
+#
+# ######## Variaveis vinculadas ao contrato (i)
+# Data_Ini = Dados_Contratos[1:Numero_de_contratos,1]
+# Duracao = Dados_Contratos[1:Numero_de_contratos,2]
+#
+# Dados_Estimados
+#
+# mes = Dados_Estimados[:,5]
+# mes + Dates.Month(12)
+# Dados_Estimados[1:2,1]
