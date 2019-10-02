@@ -59,8 +59,8 @@ function Read_from_CSV(Numero_de_meses, Numero_de_contratos)
         Porcentagem_Portifolio = convert(Matrix{Float64},zeros(Numero_de_contratos,1));
 
     #Importa dados do CSV
-    Dados_Contratos = CSV.read("C:\\Users\\rodri\\github\\TFC\\CSV\\Contratos_DB.csv",header = true);
-    Dados_Estimados = CSV.read("C:\\Users\\rodri\\github\\TFC\\CSV\\Estimados_DB.csv",header = true);
+    Dados_Contratos = CSV.read("TFC\\CSV\\Contratos_DB.csv",header = true);
+    Dados_Estimados = CSV.read("TFC\\CSV\\Estimados_DB.csv",header = true);
 
     ######## Variaveis vinculadas ao contrato (i)
     Data_Ini = Dados_Contratos[1:Numero_de_contratos,1]
@@ -186,7 +186,7 @@ function Contract_Price_Curve_Plot( Numero_de_contratos,
         end
     end
     return Grafico_Contrato
-    savefig(Grafico_Contrato,"C:\\Users\\rodri\\github\\TFC\\$path_mode\\Curvas_de_Contratos.pdf")
+    savefig(Grafico_Contrato,"TFC\\$path_mode\\Curvas_de_Contratos.pdf")
 end
 # Plot da curva de receitas Do contrato
 function Curvas_de_Receita(Numero_de_contratos,
@@ -212,7 +212,7 @@ function Curvas_de_Receita(Numero_de_contratos,
     end
     Plot_Comercializadora
     savefig(Plot_Comercializadora,
-            "C:\\Users\\rodri\\github\\TFC\\$path_mode\\Curvas_de_Receita_Comercializadora.pdf"
+            "TFC\\$path_mode\\Curvas_de_Receita_Comercializadora.pdf"
             )
 
     for i in 1:Numero_de_contratos
@@ -231,7 +231,7 @@ function Curvas_de_Receita(Numero_de_contratos,
     end
     Plot_Gerador
     savefig(Plot_Gerador,
-            "C:\\Users\\rodri\\github\\TFC\\$path_mode\\Curvas_de_Receita_Gerador.pdf"
+            "TFC\\$path_mode\\Curvas_de_Receita_Gerador.pdf"
             )
     return Plot_Comercializadora,Plot_Gerador;
 end
@@ -248,7 +248,7 @@ function Portifolio_Curve(
         )
     Plot_Portifolio
     savefig(Plot_Portifolio,
-            "C:\\Users\\rodri\\github\\TFC\\$path_mode\\Curvas_de_Receita_Portifolio.pdf"
+            "TFC\\$path_mode\\Curvas_de_Receita_Portifolio.pdf"
             )
     return Plot_Portifolio;
 end
@@ -370,17 +370,17 @@ Graf_Portifolio
 # Curva_Parametros_Temporais = plot(1:Numero_de_meses,[Preco_Spot,Geracao_Estimada[1,:],Custo_Geracao],
 #     title="Parametros Temporais",
 #     label=["Preco Spot", "Geracao Estimada", "Custo de Geracao"])
-# savefig(Curva_Parametros_Temporais,"C:\\Users\\rodri\\github\\TFC\\Curva_Parametros_Temporais.png")
+# savefig(Curva_Parametros_Temporais,"TFC\\Curva_Parametros_Temporais.png")
 #
 # Curva_Parametros_Contrato = plot(1:Numero_de_contratos,[[p],[q]],
 #     title="Parametros de contrato",
 #     label=["Preco do Contrato", "Carga contratado"])
-# savefig(Curva_Parametros_Contrato,"C:\\Users\\rodri\\github\\TFC\\Curva_Parametros_Contrato.png")
+# savefig(Curva_Parametros_Contrato,"TFC\\Curva_Parametros_Contrato.png")
 # ######################################################################################
 # ######################################################################################
 #
-# Dados_Contratos = CSV.read("C:\\Users\\rodri\\github\\TFC\\CSV\\Contratos_DB.csv",header = true);
-# Dados_Estimados = CSV.read("C:\\Users\\rodri\\github\\TFC\\CSV\\Estimados_DB.csv",header = true);
+# Dados_Contratos = CSV.read("TFC\\CSV\\Contratos_DB.csv",header = true);
+# Dados_Estimados = CSV.read("TFC\\CSV\\Estimados_DB.csv",header = true);
 #
 # ######## Variaveis vinculadas ao contrato (i)
 # Data_Ini = Dados_Contratos[1:Numero_de_contratos,1]
