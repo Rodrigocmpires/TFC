@@ -60,7 +60,7 @@ function Read_from_CSV(Numero_de_meses, Numero_de_contratos)
 
     #Importa dados do CSV
     Dados_Contratos = CSV.read("TFC\\CSV\\Contratos_DB.csv",header = true);
-    Dados_Estimados = CSV.read("TFC\\CSV\\Estimados_DB.csv",header = true);
+    Dados_Estimados = CSV.read("TFC\\CSV\\Estimados_DB.csv",header = false);
 
     ######## Variaveis vinculadas ao contrato (i)
     Data_Ini = Dados_Contratos[1:Numero_de_contratos,1]
@@ -135,6 +135,7 @@ end
 ################### Define funcao preco dos contratos #########################
 function Define_Receitas(Numero_de_contratos,
                         Numero_de_meses,
+                        Numero_de_Cenarios,
                         Data_Ini,
                         Duracao,
                         p,
@@ -148,20 +149,22 @@ function Define_Receitas(Numero_de_contratos,
         h = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses))
         R_Comercializadora = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
         R_Gerador = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
+        R_Portifolio = convert(Matrix{Float64},zeros(Numero_de_Cenarios,Numero_de_meses));
+    for j in 1:Numero_de_Cenarios
+        for i in 1:Numero_de_contratos
+            for t in 1:Numero_de_meses
+                h[i,t] = durante_o_contrato(Data_Ini[i],Duracao[i],t)
 
-    for i in 1:Numero_de_contratos
-        for t in 1:Numero_de_meses
-            h[i,t] = durante_o_contrato(Data_Ini[i],Duracao[i],t)
+                R_Comercializadora[i,t] = (p[i] - Preco_Spot[t])*q[i]*h[i,t];
+                R_Gerador[i,t] = Geracao_Estimada[i]*(Preco_Spot[i] - Custo_Geracao[t] );
 
-            R_Comercializadora[i,t] = (p[i] - Preco_Spot[t])*q[i]*h[i,t];
-            R_Gerador[i,t] = Geracao_Estimada[i]*(Preco_Spot[i] - Custo_Geracao[t] );
-
-            Serie_temporal_Contratos[i,t]= p[i]*h[i,t]
+                Serie_temporal_Contratos[i,t]= p[i]*h[i,t]
+            end
         end
+        @show R_Comercializadora
+        R_Portifolio[j,:] =Porcentagem_Portifolio'*R_Comercializadora
+        @show R_Portifolio
     end
-    @show R_Comercializadora
-    R_Portifolio =Porcentagem_Portifolio'*R_Comercializadora
-    @show R_Portifolio
     return R_Portifolio,R_Comercializadora,R_Gerador,Serie_temporal_Contratos,h;
 end
 
@@ -238,14 +241,25 @@ end
 function Portifolio_Curve(
                         Numero_de_contratos,
                         Numero_de_meses,
+                        Numero_de_Cenarios,
                         R_Portifolio,
                         path_mode
                         )
 
-    Plot_Portifolio = plot(1:Numero_de_meses,R_Portifolio[:],
-            title="Receitas do Portifólio no tempo",
-            label= "Curvas_de_Receita_Comercializadora"
-        )
+    for i in 1:Numero_de_Cenarios
+        if i ==1
+            Plot_Portifolio = plot(1:Numero_de_meses,R_Portifolio[:],
+                    title="Receitas do Portifólio no tempo",
+                    label= "Curvas_de_Receita_Comercializadora $i"
+                )
+        else
+            plot!(1:Numero_de_meses,R_Portifolio[:],
+                    title="Receitas do Portifólio no tempo",
+                    label= "Curvas_de_Receita_Comercializadora $i"
+                )
+        end
+    end
+
     Plot_Portifolio
     savefig(Plot_Portifolio,
             "TFC\\$path_mode\\Curvas_de_Receita_Portifolio.pdf"
@@ -260,7 +274,7 @@ end
 
 function main(mode)
     #Inicializa As Variaveis Principais
-    Numero_de_contratos = 2;
+    Numero_de_contratos = 3;
         Numero_de_meses = 12;#supondo mesmo numero de dados por regiao size(Dados_Estimados[:,1])/3
         #parametros Contrato
         Data_Ini = convert(Array{Int64},zeros(Numero_de_contratos,1));
@@ -284,6 +298,7 @@ function main(mode)
     ################################# Utilizacao do mode ###################################
     ######################################################################################
     if (mode == 1)
+        Numero_de_Cenarios = 1;
         path_mode = "Plot_Random_Data";
         Preco_Spot,Custo_Geracao,Data_Ini,Duracao,Geracao_Estimada,p,q,
                         Porcentagem_Portifolio = Generate_Data(
@@ -291,6 +306,7 @@ function main(mode)
                                                         Numero_de_contratos
                                                         )
         elseif (mode == 2)
+            Numero_de_Cenarios = 3;
             path_mode = "Plot_From_Excel";
             Preco_Spot,Custo_Geracao,Data_Ini,Duracao,Geracao_Estimada,p,q,
                         Porcentagem_Portifolio = Read_from_CSV(
@@ -298,6 +314,7 @@ function main(mode)
                                                         Numero_de_contratos
                                                         )
         elseif (mode == 3)
+            Numero_de_Cenarios = 3;
             path_mode = "Plot_Default_Example";
             Preco_Spot,Custo_Geracao,Data_Ini,Duracao,Geracao_Estimada,p,q,
                         Porcentagem_Portifolio = Example_Parameters(
@@ -315,6 +332,7 @@ function main(mode)
     R_Portifolio,R_Comercializadora,R_Gerador,Serie_temporal_Contratos,h = Define_Receitas(
                             Numero_de_contratos,
                             Numero_de_meses,
+                            Numero_de_Cenarios,
                             Data_Ini,
                             Duracao,
                             p,
@@ -391,3 +409,7 @@ Graf_Portifolio
 # mes = Dados_Estimados[:,5]
 # mes + Dates.Month(12)
 # Dados_Estimados[1:2,1]
+
+Dados_Estimados = CSV.read("C:\\Users\\rodri\\github\\TFC\\CSV\\Estimados_DB.csv",header = true);
+
+Dados_Contratos = CSV.read("TFC\\CSV\\Contratos_DB.csv",header = true);
