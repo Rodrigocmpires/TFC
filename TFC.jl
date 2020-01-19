@@ -4,7 +4,7 @@ Pkg.activate(@__DIR__)
 Pkg.instantiate()
 println("Excellent! Everything is good to go!")
 println(@__DIR__)
-using JuMP, GLPK, CSV, Plots,LinearAlgebra,Dates
+using JuMP, GLPK, CSV, Plots,LinearAlgebra,Dates;
 
 
 
@@ -247,6 +247,7 @@ function Portifolio_Curve(
                         )
 
     for i in 1:Numero_de_Cenarios
+        global Plot_Portifolio
         if i ==1
             Plot_Portifolio = plot(1:Numero_de_meses,R_Portifolio[:],
                     title="Receitas do Portifólio no tempo",
@@ -259,8 +260,6 @@ function Portifolio_Curve(
                 )
         end
     end
-
-    Plot_Portifolio
     savefig(Plot_Portifolio,
             "TFC\\$path_mode\\Curvas_de_Receita_Portifolio.pdf"
             )
@@ -360,6 +359,7 @@ function main(mode)
     Graf_Portifolio = Portifolio_Curve(
                         Numero_de_contratos,
                         Numero_de_meses,
+                        Numero_de_Cenarios,
                         R_Portifolio,
                         path_mode
                         )
@@ -372,7 +372,7 @@ end
 #mode = 3 para utilizar dados exemplo fixados na função
 mode = 1;
 
-Grafico_Contrato,Graf_Comercializador,Graf_Gerador, Graf_Portifolio = main(mode)
+Grafico_Contrato,Graf_Comercializador,Graf_Gerador, Graf_Portifolio = main(mode);
 
 
 Graf_Comercializador
