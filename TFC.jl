@@ -4,7 +4,7 @@ Pkg.activate(@__DIR__)
 Pkg.instantiate()
 println("Excellent! Everything is good to go!")
 println(@__DIR__)
-using JuMP, GLPK, CSV, Plots,LinearAlgebra,Dates;
+using JuMP, GLPK, CSV, Plots,LinearAlgebra,Dates,DataFrames;
 
 
 
@@ -18,10 +18,11 @@ function Generate_Data(Numero_de_meses, Numero_de_contratos)
     p = convert(Matrix{Float64},zeros(Numero_de_contratos,1))
     q = convert(Matrix{Float64},zeros(Numero_de_contratos,1))
     Porcentagem_Portifolio = convert(Matrix{Float64},zeros(Numero_de_contratos,1))
-
+    header_Geracao = Array{Union{Missing, String}}(missing, Numero_de_meses)
     for t in 1:Numero_de_meses
         Preco_Spot[t] = 80 + rand()*40;
-        Custo_Geracao[t] = 10 + rand()/100;
+        Custo_Geracao[t] = 0.1 + rand()/100;
+        header_Geracao[t] = "Mes $t";
     end
     for i in 1:Numero_de_contratos
         p[i]= 100 + rand()*10;
@@ -36,6 +37,25 @@ function Generate_Data(Numero_de_meses, Numero_de_contratos)
             Geracao_Estimada[i,t] = 500 + rand()*50;
         end
     end
+
+    Contratosdf = DataFrame([Data_Ini'
+            Duracao'
+            p'
+            q'
+            Porcentagem_Portifolio']')
+    Mesesdf = DataFrame([Preco_Spot'
+            Custo_Geracao']')
+    Geracao_Estimadadf = DataFrame(Geracao_Estimada)
+
+    CSV.write("TFC\\Plot_Random_Data\\Contratos.CSV", Contratosdf,header = ["Data_Ini",
+            "Duracao",
+            "p",
+            "q",
+            "Porcentagem_Portifolio"],delim = ';');
+    CSV.write("TFC\\Plot_Random_Data\\Meses.CSV", Mesesdf,header = ["Preco_Spot",
+            "Custo_Geracao"],delim = ';');
+    CSV.write("TFC\\Plot_Random_Data\\GeracaoEstimada.CSV", Geracao_Estimadadf, header = header_Geracao ,delim = ';');
+
     return Preco_Spot,
             Custo_Geracao,
             Data_Ini,
@@ -43,7 +63,8 @@ function Generate_Data(Numero_de_meses, Numero_de_contratos)
             Geracao_Estimada,
             p,
             q,
-            Porcentagem_Portifolio;
+            Porcentagem_Portifolio,
+            header_Geracao;
 end
 
 
@@ -273,8 +294,8 @@ end
 
 function main(mode)
     #Inicializa As Variaveis Principais
-    Numero_de_contratos = 3;
-        Numero_de_meses = 12;#supondo mesmo numero de dados por regiao size(Dados_Estimados[:,1])/3
+    Numero_de_contratos = 10;
+        Numero_de_meses = 120;#supondo mesmo numero de dados por regiao size(Dados_Estimados[:,1])/3
         #parametros Contrato
         Data_Ini = convert(Array{Int64},zeros(Numero_de_contratos,1));
         Duracao = convert(Array{Int64},zeros(Numero_de_contratos,1));
@@ -293,6 +314,8 @@ function main(mode)
         #Parametros Auxiliares
         h = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
         Serie_temporal_Contratos= convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
+        #Headers para a escrita do csv
+        header_Geracao = Array{Union{Missing, String}}(missing, Numero_de_meses);
 
     ################################# Utilizacao do mode ###################################
     ######################################################################################
@@ -300,7 +323,7 @@ function main(mode)
         Numero_de_Cenarios = 1;
         path_mode = "Plot_Random_Data";
         Preco_Spot,Custo_Geracao,Data_Ini,Duracao,Geracao_Estimada,p,q,
-                        Porcentagem_Portifolio = Generate_Data(
+                        Porcentagem_Portifolio,header_Geracao = Generate_Data(
                                                         Numero_de_meses,
                                                         Numero_de_contratos
                                                         )
@@ -321,7 +344,7 @@ function main(mode)
                                                         Numero_de_contratos
                                                         )
         else
-            print("Invalid Syntax on Variable mode");
+            throw("Invalid Syntax on Variable mode");
     end
 
 
