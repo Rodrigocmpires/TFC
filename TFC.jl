@@ -1,17 +1,12 @@
 
-import Pkg
-Pkg.activate(@__DIR__)
-Pkg.instantiate()
-println("Excellent! Everything is good to go!")
-println(@__DIR__)
-using JuMP, GLPK, CSV, Plots,LinearAlgebra,Dates,DataFrames,Parameters;
+using JuMP, GLPK, CSV, Plots,LinearAlgebra,Dates,DataFrames,Parameters,Revise;
 include("Function.jl")
 include("PlotGenerator.jl")
 ##################### Gera valores aleatorios para teste #######################
 
 
 
-function main(mode,Numero_de_Cenarios)
+function main(mode,Numero_de_Cenarios,Regioes_Analisadas)
     #Inicializa As Variaveis Principais
     Numero_de_contratos = 10;
         Numero_de_meses = 11;#supondo mesmo numero de dados por regiao size(Dados_Estimados[:,1])/3
@@ -34,10 +29,10 @@ function main(mode,Numero_de_Cenarios)
         Serie_temporal_Contratos= convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
         #Headers para a escrita do csv
         header_Geracao = Array{Union{Missing, String}}(missing, Numero_de_meses);
-
+        Numero_de_Regioes = size(Regioes_Analisadas,1);
     ################################# Utilizacao do mode ###################################
     ######################################################################################
-    for regiao in ["Sudeste","Nordeste","Norte"]
+    for regiao in Regioes_Analisadas
         if (mode == 1)
             #Numero_de_Cenarios = 1;
             Preco_Spot = convert(Matrix{Float64},zeros(Numero_de_meses,Numero_de_Cenarios));
@@ -47,7 +42,9 @@ function main(mode,Numero_de_Cenarios)
                                                             Numero_de_meses,
                                                             Numero_de_contratos,
                                                             Numero_de_Cenarios,
-                                                            regiao
+                                                            regiao,
+                                                            Numero_de_Regioes,
+                                                            Regioes_Analisadas
                                                             );
 
 
@@ -79,6 +76,7 @@ function main(mode,Numero_de_Cenarios)
 ######################################################################################
 ######################################################################################
 
+    global Grafico_Contrato,Graf_Comercializador,Graf_Gerador, Graf_Portifolio_Comercializadora,Graf_Portifolio_Geradora;
         R_Portifolio_Geradora,
         R_Portifolio_Comercializadora,
         R_Comercializadora,
@@ -95,14 +93,16 @@ function main(mode,Numero_de_Cenarios)
                                 Preco_Spot,
                                 Custo_Geracao,
                                 Geracao_Estimada,
-                                Porcentagem_Portifolio
+                                Porcentagem_Portifolio,
+                                path_mode,
+                                regiao
                                 );
 
         Grafico_Contrato,
-        Graf_Comercializador,
-        Graf_Gerador,
-        Graf_Portifolio_Comercializadora,
-        Graf_Portifolio_Geradora =  PlotGenerator(Numero_de_contratos,
+            Graf_Comercializador,
+            Graf_Gerador,
+            Graf_Portifolio_Comercializadora,
+            Graf_Portifolio_Geradora =  PlotGenerator(Numero_de_contratos,
                                                        Serie_temporal_Contratos,
                                                        Numero_de_meses,
                                                        R_Comercializadora,

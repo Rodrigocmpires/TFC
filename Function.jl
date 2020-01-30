@@ -1,4 +1,4 @@
-function Generate_Data(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios, regiao)
+function Generate_Data(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios, regiao,Numero_de_Regioes,Regioes_Analisadas)
     Preco_Spot = convert(Matrix{Float64},zeros(Numero_de_meses*Numero_de_Regioes,Numero_de_Cenarios))
     Custo_Geracao = convert(Matrix{Float64},zeros(Numero_de_meses*Numero_de_Regioes,Numero_de_Cenarios));
     Data_Ini = convert(Array{Int64},zeros(Numero_de_contratos*Numero_de_Regioes,1));
@@ -19,10 +19,10 @@ function Generate_Data(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios, 
         end
     end
     for t in 1:Numero_de_meses
-        Regiao_Matrix_Mes[t,:] = ["Sudeste","Nordeste","Norte"];
+        Regiao_Matrix_Mes[t,:] = Regioes_Analisadas;
     end
     for t in 1:Numero_de_contratos
-        Regiao_Matrix_Contratos[t,:] = ["Sudeste","Nordeste","Norte"];
+        Regiao_Matrix_Contratos[t,:] = Regioes_Analisadas;
     end
     Regiao_Mes = [Regiao_Matrix_Mes[:,1]' Regiao_Matrix_Mes[:,2]' Regiao_Matrix_Mes[:,3]']'
     Regiao_Contratos = [Regiao_Matrix_Contratos[:,1]' Regiao_Matrix_Contratos[:,2]' Regiao_Matrix_Contratos[:,3]']'
@@ -36,11 +36,11 @@ function Generate_Data(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios, 
     for i in 1:Numero_de_Regioes
         ini = 1+ (i-1)*Numero_de_contratos;
         fim =  i*Numero_de_contratos;
-        @show ini,fim
         Porcentagem_Portifolio[ini:fim] = Porcentagem_Portifolio[ini:fim]./
             (Porcentagem_Portifolio[ini:fim]'*ones(Numero_de_contratos));
-        @show (Porcentagem_Portifolio[ini:fim]'*ones(Numero_de_contratos))
+
     end
+    π
 
     Contratosdf = DataFrame( Regiao = Regiao_Contratos,
                             Data_Ini = Data_Ini[:],
@@ -88,7 +88,7 @@ function Generate_Data(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios, 
             p_Regiao,
             q_Regiao,
             Porcentagem_Portifolio_Regiao,
-            header_Geracao;
+            header_cenario;
 end
 
 ##################### Gera valores aleatorios para teste #######################
@@ -196,7 +196,9 @@ function Define_Receitas(Numero_de_contratos,
                         Preco_Spot,
                         Custo_Geracao,
                         Geracao_Estimada,
-                        Porcentagem_Portifolio)
+                        Porcentagem_Portifolio,
+                        path_mode,
+                        regiao)
 
     Serie_temporal_Contratos= convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
         h = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses))
@@ -204,6 +206,8 @@ function Define_Receitas(Numero_de_contratos,
         R_Gerador = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
         R_Portifolio_Geradora = convert(Matrix{Float64},zeros(Numero_de_Cenarios,Numero_de_meses));
         R_Portifolio_Comercializadora = convert(Matrix{Float64},zeros(Numero_de_Cenarios,Numero_de_meses));
+        header_cenario = Array{Union{Missing, String}}(missing, Numero_de_Cenarios)
+
     for j in 1:Numero_de_Cenarios
         for i in 1:Numero_de_contratos
             for t in 1:Numero_de_meses
@@ -214,8 +218,13 @@ function Define_Receitas(Numero_de_contratos,
                 Serie_temporal_Contratos[i,t]= p[i]*h[i,t]
             end
         end
+        header_cenario[j] = "Cenario $j";
         R_Portifolio_Comercializadora[j,:] = Porcentagem_Portifolio'*R_Comercializadora
         R_Portifolio_Geradora[j,:] = Porcentagem_Portifolio'*R_Gerador
     end
+    R_Portifolio_Comercializadoradf = DataFrame(hcat(R_Portifolio_Comercializadora'))
+    R_Portifolio_Geradoradf = DataFrame(hcat(R_Portifolio_Geradora'))
+    CSV.write("$path_mode\\CSV\\Receitas\\ReceitaComercializadora_$regiao.CSV", R_Portifolio_Comercializadoradf,delim = ';',header = header_cenario[:]);
+    CSV.write("$path_mode\\CSV\\Receitas\\ReceitaGeracao_$regiao.CSV", R_Portifolio_Geradoradf,delim = ';',header = header_cenario[:]);
     return R_Portifolio_Geradora,R_Portifolio_Comercializadora,R_Comercializadora,R_Gerador,Serie_temporal_Contratos,h;
 end

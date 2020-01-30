@@ -1,3 +1,4 @@
+using Plots
 function PlotGenerator(    Numero_de_contratos,
                            Serie_temporal_Contratos,
                            Numero_de_meses,
@@ -24,8 +25,7 @@ function PlotGenerator(    Numero_de_contratos,
                        R_Gerador,
                        path_mode,
                        CaminhoRegiao
-                       )
-
+                       );
    Graf_Portifolio_Comercializadora = Portifolio_Curve(
                        Numero_de_contratos,
                        Numero_de_meses,
@@ -34,7 +34,7 @@ function PlotGenerator(    Numero_de_contratos,
                        path_mode,
                        "Comercializadora",
                        CaminhoRegiao
-                       )
+                       );
    Graf_Portifolio_Geradora = Portifolio_Curve(
                        Numero_de_contratos,
                        Numero_de_meses,
@@ -43,8 +43,8 @@ function PlotGenerator(    Numero_de_contratos,
                        path_mode,
                        "Geradora",
                        CaminhoRegiao
-                       )
-
+                       );
+    global Grafico_Contrato,Graf_Comercializador,Graf_Gerador, Graf_Portifolio_Comercializadora,Graf_Portifolio_Geradora
    return Grafico_Contrato,Graf_Comercializador,Graf_Gerador, Graf_Portifolio_Comercializadora,Graf_Portifolio_Geradora;
 end
 
