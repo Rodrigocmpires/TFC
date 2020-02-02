@@ -1,6 +1,0 @@
-\begin{align}
-	& \min_{g_{i}} \sum_{i \in \mathcal{N}} c_{i} g_{i} \label{eq01::EconDispatch} \\
-        & ~ \text{subject to:} \notag \\
-        & ~ \sum_{i \in \mathcal{N}} g_{i} = d; && \hspace{0.80cm} : \pi \label{eq02::EconDispatch} \\
-        & ~ 0 \leq g_{i} \leq x_{i}, && \hspace{0.80cm} : \big( \underline{\beta}_{i}, \overline{\beta}_{i} \big) \hspace{0.70cm} \forall ~ i \in \mathcal{N}. \label{eq03::EconDispatch}
-\end{align}
