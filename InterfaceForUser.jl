@@ -11,7 +11,7 @@ Pkg.pwd()
 #mode = 1 para dados aleatorios
 #mode = 2 para retirar dados do CSV
 #mode = 3 para utilizar dados exemplo fixados na função
-mode =1;
+mode =2;
 Numero_de_Cenarios_PLD = 3;
 Regioes_Analisadas = ["Sudeste","Nordeste","Norte"];
 

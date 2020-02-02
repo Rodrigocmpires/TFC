@@ -1,20 +1,33 @@
-function Generate_Data(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios, regiao,Numero_de_Regioes,Regioes_Analisadas)
-    Preco_Spot = convert(Matrix{Float64},zeros(Numero_de_meses*Numero_de_Regioes,Numero_de_Cenarios))
-    Custo_Geracao = convert(Matrix{Float64},zeros(Numero_de_meses*Numero_de_Regioes,Numero_de_Cenarios));
+function Generate_Data(Numero_de_meses,
+                        Numero_de_contratos,
+                        Numero_de_Cenarios_PLD,
+                        Numero_de_Cenarios_Geracao,
+                         regiao,
+                         Numero_de_Regioes,
+                         Regioes_Analisadas)
+
+    Preco_Spot = convert(Matrix{Float64},zeros(Numero_de_meses*Numero_de_Regioes,Numero_de_Cenarios_PLD))
+    Custo_Geracao = convert(Matrix{Float64},zeros(Numero_de_meses,Numero_de_Cenarios_Geracao));
     Data_Ini = convert(Array{Int64},zeros(Numero_de_contratos*Numero_de_Regioes,1));
     Duracao = convert(Array{Int64},zeros(Numero_de_contratos*Numero_de_Regioes,1));
-    Geracao_Estimada = convert(Matrix{Float64},zeros(Numero_de_meses*Numero_de_Regioes,Numero_de_Cenarios));
+    Geracao_Estimada = convert(Matrix{Float64},zeros(Numero_de_meses,Numero_de_Cenarios_Geracao));
     p = convert(Matrix{Float64},zeros(Numero_de_contratos*Numero_de_Regioes,1))
     q = convert(Matrix{Float64},zeros(Numero_de_contratos*Numero_de_Regioes,1))
     Porcentagem_Portifolio = convert(Matrix{Float64},zeros(Numero_de_contratos*Numero_de_Regioes,1))
-    header_cenario = Array{Union{Missing, String}}(missing, Numero_de_Cenarios)
+    header_cenario_Geracao = Array{Union{Missing, String}}(missing, Numero_de_Cenarios_Geracao)
+    header_cenario_PLD= Array{Union{Missing, String}}(missing, Numero_de_Cenarios_PLD)
     Regiao_Matrix_Mes = Array{Union{Missing, String}}(missing, Numero_de_meses,3)
     Regiao_Matrix_Contratos = Array{Union{Missing, String}}(missing, Numero_de_contratos,3)
-    for j in 1:Numero_de_Cenarios
+    for j in 1:Numero_de_Cenarios_PLD
         for t in 1:Numero_de_meses*Numero_de_Regioes
             Preco_Spot[t,j] = 80 + rand()*40;
-            Custo_Geracao[t,j] = 0.1 + rand()/100;
-            header_cenario[j] = "Cenario $j";
+            header_cenario_PLD[j] = "Cenario $j";
+        end
+    end
+    for j in 1:Numero_de_Cenarios_Geracao
+        for t in 1:Numero_de_meses
+            Custo_Geracao[t,j] = 0.001 + rand()/10000;
+            header_cenario_Geracao[j] = "Cenario $j";
             Geracao_Estimada[t,j] = 500 + rand()*50;
         end
     end
@@ -40,8 +53,6 @@ function Generate_Data(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios, 
             (Porcentagem_Portifolio[ini:fim]'*ones(Numero_de_contratos));
 
     end
-    π
-
     Contratosdf = DataFrame( Regiao = Regiao_Contratos,
                             Data_Ini = Data_Ini[:],
                             Duracao = Duracao[:],
@@ -51,40 +62,34 @@ function Generate_Data(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios, 
 
 
     PrecoPLDdf = DataFrame([Regiao_Mes Preco_Spot])
-    Geracao_Estimadadf = DataFrame([Regiao_Mes Geracao_Estimada])
-    Custo_Estimadodf  = DataFrame([Regiao_Mes Custo_Geracao])
+    Geracao_Estimadadf = DataFrame(Geracao_Estimada)
+    Custo_Estimadodf  = DataFrame(Custo_Geracao)
 
     CSV.write("Random_Data\\CSV\\Contratos.CSV", Contratosdf,delim = ';',);
-    CSV.write("Random_Data\\CSV\\PLDEstimado.CSV", PrecoPLDdf,delim = ';',header = ["Regiao"; header_cenario[:]]);
-    CSV.write("Random_Data\\CSV\\GeracaoEstimada.CSV", Geracao_Estimadadf,delim = ';',header = ["Regiao"; header_cenario[:]]);
-    CSV.write("Random_Data\\CSV\\CustoPorGeracaoEstimado.CSV", Custo_Estimadodf,delim = ';',header = ["Regiao"; header_cenario[:]]);
+    CSV.write("Random_Data\\CSV\\PLDEstimado.CSV", PrecoPLDdf,delim = ';',header = ["Regiao"; header_cenario_PLD[:]]);
+    CSV.write("Random_Data\\CSV\\GeracaoEstimada.CSV", Geracao_Estimadadf,delim = ';',header = [header_cenario_Geracao[:]]);
+    CSV.write("Random_Data\\CSV\\CustoPorGeracaoEstimado.CSV", Custo_Estimadodf,delim = ';',header = [header_cenario_Geracao[:]]);
 
     #Relendo o arquivo escrito para confirmar que de fato foi escrito e para adquirir os campos do Header
     Contratosdf = CSV.read("Random_Data\\CSV\\Contratos.CSV",delim = ';',header = true);
     PrecoPLDdf = CSV.read("Random_Data\\CSV\\PLDEstimado.CSV",delim = ';',header = true);
-    Geracao_Estimadadf = CSV.read("Random_Data\\CSV\\GeracaoEstimada.CSV",delim = ';',header = true);
-    Custo_Estimadodf = CSV.read("Random_Data\\CSV\\CustoPorGeracaoEstimado.CSV",delim = ';',header = true);
     ######## Variaveis vinculadas ao contrato (i)
     Dados_Contratos_regiao = filter(row -> row.Regiao ∈ [regiao], Contratosdf)
     Dados_Estimados_regiao = filter(row -> row.Regiao ∈ [regiao], PrecoPLDdf)
-    Dados_Geracao = filter(row -> row.Regiao ∈ [regiao], Geracao_Estimadadf)
-    Dados_Custo_Geracao_Regiao = filter(row -> row.Regiao ∈ [regiao], Custo_Estimadodf)
     Data_Ini_Regiao = Dados_Contratos_regiao[:,2]
     Duracao_Regiao = Dados_Contratos_regiao[:,3]
     p_Regiao = Dados_Contratos_regiao[:,4];
     q_Regiao = Dados_Contratos_regiao[:,5];
     Porcentagem_Portifolio_Regiao = Dados_Contratos_regiao[:,6];
     ######## Variaveis vinculadas o periodo (t)
-    Preco_Spot_Regiao = Dados_Estimados_regiao[1:Numero_de_meses,2:Numero_de_Cenarios+1];
-    Geracao_Estimada_Regiao = Dados_Geracao[1:Numero_de_meses,2];
+    Preco_Spot_Regiao = convert( Matrix,Dados_Estimados_regiao[1:Numero_de_meses,2:Numero_de_Cenarios_PLD+1]);
     # Custo_Geracao = Dados_Estimados_regiao[1:Numero_de_meses,3]
     Regiao_PLD_Regiao = Dados_Estimados_regiao[1:Numero_de_meses,1];
-    Custo_Geracao_Regiao =  Dados_Custo_Geracao_Regiao[1:Numero_de_meses,2];
     return Preco_Spot_Regiao,
-            Custo_Geracao_Regiao,
+            Custo_Geracao[:,1],
             Data_Ini_Regiao,
             Duracao_Regiao,
-            Geracao_Estimada_Regiao,
+            Geracao_Estimada,
             p_Regiao,
             q_Regiao,
             Porcentagem_Portifolio_Regiao,
@@ -92,12 +97,17 @@ function Generate_Data(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios, 
 end
 
 ##################### Gera valores aleatorios para teste #######################
-function Read_from_CSV(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios,regiao)
+function Read_from_CSV(Numero_de_meses,
+                        Numero_de_contratos,
+                        Numero_de_Cenarios_PLD,
+                        Numero_de_Cenarios_Geracao,
+                        regiao)
+
     Preco_Spot = convert(Matrix{Float64},zeros(Numero_de_meses,1));
         Custo_Geracao = convert(Matrix{Float64},zeros(Numero_de_meses,1));
         Data_Ini = convert(Array{Int64},zeros(Numero_de_contratos,1));
         Duracao = convert(Array{Int64},zeros(Numero_de_contratos,1));
-        Geracao_Estimada = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
+        Geracao_Estimada = convert(Matrix{Float64},zeros(Numero_de_Cenarios_Geracao,Numero_de_meses));
         p = convert(Matrix{Float64},zeros(Numero_de_contratos,1));
         q = convert(Matrix{Float64},zeros(Numero_de_contratos,1));
         Porcentagem_Portifolio = convert(Matrix{Float64},zeros(Numero_de_contratos,1));
@@ -122,8 +132,8 @@ function Read_from_CSV(Numero_de_meses, Numero_de_contratos,Numero_de_Cenarios,r
     q = Dados_Contratos_regiao[:,5];
     Porcentagem_Portifolio = Dados_Contratos_regiao[:,6];
     ######## Variaveis vinculadas o periodo (t)
-    Preco_Spot = Dados_Estimados_regiao[1:Numero_de_meses,2:Numero_de_Cenarios+1];
-    Geracao_Estimada = Dados_Geracao[1:Numero_de_meses,1];
+    Preco_Spot = convert( Matrix, Dados_Estimados_regiao[1:Numero_de_meses,2:Numero_de_Cenarios_PLD+1]);
+    Geracao_Estimada = convert( Matrix, Dados_Geracao[1:Numero_de_meses,1:Numero_de_Cenarios_Geracao]);
     # Custo_Geracao = Dados_Estimados_regiao[1:Numero_de_meses,3]
     Regiao_PLD = Dados_Estimados_regiao[1:Numero_de_meses,1];
 
@@ -188,7 +198,8 @@ end
 ################### Define funcao preco dos contratos #########################
 function Define_Receitas(Numero_de_contratos,
                         Numero_de_meses,
-                        Numero_de_Cenarios,
+                        Numero_de_Cenarios_PLD,
+                        Numero_de_Cenarios_Geracao,
                         Data_Ini,
                         Duracao,
                         p,
@@ -203,28 +214,38 @@ function Define_Receitas(Numero_de_contratos,
     Serie_temporal_Contratos= convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
         h = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses))
         R_Comercializadora = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
-        R_Gerador = convert(Matrix{Float64},zeros(Numero_de_contratos,Numero_de_meses));
-        R_Portifolio_Geradora = convert(Matrix{Float64},zeros(Numero_de_Cenarios,Numero_de_meses));
-        R_Portifolio_Comercializadora = convert(Matrix{Float64},zeros(Numero_de_Cenarios,Numero_de_meses));
-        header_cenario = Array{Union{Missing, String}}(missing, Numero_de_Cenarios)
+        R_Gerador = convert(Matrix{Float64},zeros(Numero_de_Cenarios_Geracao,Numero_de_meses));
+        R_Portifolio_Comercializadora = convert(Matrix{Float64},zeros(Numero_de_Cenarios_PLD,Numero_de_meses));
+        header_cenario_PLD = Array{Union{Missing, String}}(missing, Numero_de_Cenarios_PLD)
+        header_cenario_Geracao = Array{Union{Missing, String}}(missing, Numero_de_Cenarios_Geracao)
+        R_Portifolio_Geradora_cenario_Geracao = convert(Matrix{Float64},zeros(Numero_de_Cenarios_Geracao,Numero_de_meses));
+        R_Portifolio_Geradora_cenario_PLD = convert(Matrix{Float64},zeros(Numero_de_Cenarios_PLD,Numero_de_meses));
+        Preco_Spot_Medio = (Preco_Spot*ones(Numero_de_Cenarios_PLD))'./size(1:Numero_de_Cenarios_PLD);
 
-    for j in 1:Numero_de_Cenarios
+    for j in 1:Numero_de_Cenarios_PLD
         for i in 1:Numero_de_contratos
             for t in 1:Numero_de_meses
                 h[i,t] = durante_o_contrato(Data_Ini[i],Duracao[i],t);
-                R_Comercializadora[i,t] = (p[i] - Preco_Spot[t,j])*q[i]*h[i,t];
-                R_Gerador[i,t] = Geracao_Estimada[i]*(Preco_Spot[i,j] - Custo_Geracao[t] );
-
-                Serie_temporal_Contratos[i,t]= p[i]*h[i,t]
             end
+            Serie_temporal_Contratos[i,:]= p[i].*h[i,:]
+            R_Comercializadora[i,:] = ((p[i]*ones(Numero_de_meses) - Preco_Spot[:,j]).*q[i]).*h[i,:]
         end
-        header_cenario[j] = "Cenario $j";
+        for n in 1:Numero_de_Cenarios_Geracao
+            R_Gerador[n,:] = Geracao_Estimada[:,n].*(Preco_Spot[:,j] - Custo_Geracao[:] );
+            R_Portifolio_Geradora_cenario_Geracao[n,:] = Geracao_Estimada[:,n].*(Preco_Spot_Medio[:] - Custo_Geracao[:] );
+            header_cenario_Geracao[n] = "Cenario $n";
+        end
+        header_cenario_PLD[j] = "Cenario $j";
         R_Portifolio_Comercializadora[j,:] = Porcentagem_Portifolio'*R_Comercializadora
-        R_Portifolio_Geradora[j,:] = Porcentagem_Portifolio'*R_Gerador
+        #fixando os Cenarios de geracao na media por mes
+        R_Portifolio_Geradora_cenario_PLD[j,:] = (R_Gerador'*ones(Numero_de_Cenarios_Geracao))'./size(1:Numero_de_Cenarios_Geracao);
     end
+    @show h
     R_Portifolio_Comercializadoradf = DataFrame(hcat(R_Portifolio_Comercializadora'))
-    R_Portifolio_Geradoradf = DataFrame(hcat(R_Portifolio_Geradora'))
-    CSV.write("$path_mode\\CSV\\Receitas\\ReceitaComercializadora_$regiao.CSV", R_Portifolio_Comercializadoradf,delim = ';',header = header_cenario[:]);
-    CSV.write("$path_mode\\CSV\\Receitas\\ReceitaGeracao_$regiao.CSV", R_Portifolio_Geradoradf,delim = ';',header = header_cenario[:]);
-    return R_Portifolio_Geradora,R_Portifolio_Comercializadora,R_Comercializadora,R_Gerador,Serie_temporal_Contratos,h;
+    R_Portifolio_Geradora_cenario_PLDdf = DataFrame(hcat(R_Portifolio_Geradora_cenario_PLD'))
+    R_Portifolio_Geradora_cenario_Geracaodf = DataFrame(hcat(R_Portifolio_Geradora_cenario_Geracao'))
+    CSV.write("$path_mode\\CSV\\Receitas\\ReceitaComercializadora_$regiao.CSV", R_Portifolio_Comercializadoradf,delim = ';',header = header_cenario_PLD[:]);
+    CSV.write("$path_mode\\CSV\\Receitas\\ReceitaGeracao_Cenario_PLD_$regiao.CSV", R_Portifolio_Geradora_cenario_PLDdf ,delim = ';',header = header_cenario_PLD[:]);
+    CSV.write("$path_mode\\CSV\\Receitas\\ReceitaGeracao_Cenario_Geracao.CSV", R_Portifolio_Geradora_cenario_Geracaodf ,delim = ';',header = header_cenario_Geracao[:]);
+    return R_Portifolio_Geradora_cenario_PLD,R_Portifolio_Geradora_cenario_Geracao,R_Portifolio_Comercializadora,R_Comercializadora,R_Gerador,Serie_temporal_Contratos,h;
 end
