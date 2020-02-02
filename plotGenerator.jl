@@ -17,10 +17,11 @@ function PlotGenerator(    Numero_de_contratos,
    Grafico_Contrato = Contract_Price_Curve_Plot(
                            Numero_de_contratos,
                            Serie_temporal_Contratos,
-                           path_mode
+                           path_mode,
+                           CaminhoRegiao
                            );
 
-   Graf_Comercializador, Graf_Gerador = Curvas_de_Receita(
+   Graf_Comercializador = Curvas_de_Receita(
                        Numero_de_contratos,
                        Numero_de_meses,
                        Numero_de_Cenarios_Geracao,
@@ -47,7 +48,7 @@ function PlotGenerator(    Numero_de_contratos,
                        path_mode,
                        "Geradora Cenario Geracao",
                        "Geradora_Cenario_Geracao",
-                       ""
+                       CaminhoRegiao
                        );
    Graf_Portifolio_Geradora_Cenario_PLD = Portifolio_Curve(
                        Numero_de_contratos,
@@ -59,14 +60,15 @@ function PlotGenerator(    Numero_de_contratos,
                        "Geradora_Cenario_PLD",
                        CaminhoRegiao
                        );
-    global Grafico_Contrato,Graf_Comercializador,Graf_Gerador, Graf_Portifolio_Comercializadora,Graf_Portifolio_Geradora_Cenario_PLD,Graf_Portifolio_Geradora_Cenario_Geracao
-   return Grafico_Contrato,Graf_Comercializador,Graf_Gerador, Graf_Portifolio_Comercializadora,Graf_Portifolio_Geradora_Cenario_PLD,Graf_Portifolio_Geradora_Cenario_Geracao;
+    global Grafico_Contrato,Graf_Comercializador, Graf_Portifolio_Comercializadora,Graf_Portifolio_Geradora_Cenario_PLD,Graf_Portifolio_Geradora_Cenario_Geracao
+   return Grafico_Contrato,Graf_Comercializador, Graf_Portifolio_Comercializadora,Graf_Portifolio_Geradora_Cenario_PLD,Graf_Portifolio_Geradora_Cenario_Geracao;
 end
 
 # Plot de Curva de Precos dos Contratos
 function Contract_Price_Curve_Plot( Numero_de_contratos,
                                     Serie_temporal_Contratos,
-                                    path_mode
+                                    path_mode,
+                                    CaminhoRegiao
                                     )
 
     for i in 1:Numero_de_contratos
@@ -83,7 +85,7 @@ function Contract_Price_Curve_Plot( Numero_de_contratos,
                 )
         end
     end
-    savefig(Grafico_Contrato,"$path_mode\\Plot\\Curvas_de_Contratos_$path_mode.pdf")
+    savefig(Grafico_Contrato,"$path_mode\\Plot\\Curvas_de_Contratos_$(path_mode)$CaminhoRegiao.pdf")
     return Grafico_Contrato
 end
 # Plot da curva de receitas Do contrato
@@ -110,30 +112,10 @@ function Curvas_de_Receita(Numero_de_contratos,
                 )
         end
     end
-    @show "$path_mode\\Plot\\Curvas_de_Receita_Comercializadora_$(path_mode)$CaminhoRegiao.pdf"
     savefig(Plot_Comercializadora,
             "$path_mode\\Plot\\Curvas_de_Receita_Comercializadora_$(path_mode)$CaminhoRegiao.pdf"
             )
-
-    for i in 1:Numero_de_Cenarios_Geracao
-        global Plot_Gerador
-        if i==1
-            Plot_Gerador = plot(1:Numero_de_meses,R_Gerador[1,:],
-                            title="Receitas no tempo",
-                            label="Gerador no Cenário de Geração $i"
-                    )
-        else
-            plot!(1:Numero_de_meses,R_Gerador[i,:],
-                    title="Receitas no tempo",
-                    label="Gerador no Cenário de Geração $i"
-                )
-        end
-    end
-    Plot_Gerador
-    savefig(Plot_Gerador,
-            "$path_mode\\Plot\\Curvas_de_Receita_Gerador_$(path_mode)$CaminhoRegiao.pdf"
-            )
-    return Plot_Comercializadora,Plot_Gerador;
+    return Plot_Comercializadora;
 end
 function Portifolio_Curve(
                         Numero_de_contratos,

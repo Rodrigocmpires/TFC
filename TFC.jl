@@ -50,7 +50,6 @@ function main(mode,Numero_de_Cenarios_PLD,Numero_de_Cenarios_Geracao,Numero_de_c
 
 
         elseif (mode == 2)
-            Preco_Spot = convert(Matrix{Float64},zeros(Numero_de_meses,Numero_de_Cenarios));
             path_mode = "Data_From_CSV";
             Preco_Spot,Custo_Geracao,Data_Ini,Duracao,Geracao_Estimada,p,q,
                         Porcentagem_Portifolio = Read_from_CSV(
@@ -58,18 +57,19 @@ function main(mode,Numero_de_Cenarios_PLD,Numero_de_Cenarios_Geracao,Numero_de_c
                                                         Numero_de_contratos,
                                                         Numero_de_Cenarios_PLD,
                                                         Numero_de_Cenarios_Geracao,
+                                                        path_mode,
                                                         regiao
                                                         )
 
         elseif (mode == 3)
-            Preco_Spot = convert(Matrix{Float64},zeros(Numero_de_meses,Numero_de_Cenarios));
             path_mode = "Default_Example";
             Preco_Spot,Custo_Geracao,Data_Ini,Duracao,Geracao_Estimada,p,q,
-                        Porcentagem_Portifolio = Example_Parameters(
+                        Porcentagem_Portifolio = Read_from_CSV(
                                                         Numero_de_meses,
                                                         Numero_de_contratos,
                                                         Numero_de_Cenarios_PLD,
                                                         Numero_de_Cenarios_Geracao,
+                                                        path_mode,
                                                         regiao
                                                         )
         else
@@ -112,7 +112,6 @@ function main(mode,Numero_de_Cenarios_PLD,Numero_de_Cenarios_Geracao,Numero_de_c
 
         Grafico_Contrato,
             Graf_Comercializador,
-            Graf_Gerador,
             Graf_Portifolio_Comercializadora,
             Graf_Portifolio_Geradora_Cenario_PLD,
             Graf_Portifolio_Geradora_Cenario_Geracao =  PlotGenerator(Numero_de_contratos,
@@ -130,7 +129,7 @@ function main(mode,Numero_de_Cenarios_PLD,Numero_de_Cenarios_Geracao,Numero_de_c
 
     end
 
-    return Grafico_Contrato,Graf_Comercializador,Graf_Gerador, Graf_Portifolio_Comercializadora,Graf_Portifolio_Geradora_Cenario_PLD,Graf_Portifolio_Geradora_Cenario_Geracao;
+    return Grafico_Contrato,Graf_Comercializador, Graf_Portifolio_Comercializadora,Graf_Portifolio_Geradora_Cenario_PLD,Graf_Portifolio_Geradora_Cenario_Geracao;
 end
 
 

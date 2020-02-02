@@ -101,6 +101,7 @@ function Read_from_CSV(Numero_de_meses,
                         Numero_de_contratos,
                         Numero_de_Cenarios_PLD,
                         Numero_de_Cenarios_Geracao,
+                        path_mode,
                         regiao)
 
     Preco_Spot = convert(Matrix{Float64},zeros(Numero_de_meses,1));
@@ -113,16 +114,10 @@ function Read_from_CSV(Numero_de_meses,
         Porcentagem_Portifolio = convert(Matrix{Float64},zeros(Numero_de_contratos,1));
     global Dados_Contratos, Dados_Estimados
     #Importa dados do CSV
-    Dados_Contratos = CSV.read("Data_From_CSV\\CSV\\Contratos_DB.csv",header = true, delim = ';');
-    Dados_Estimados = CSV.read("Data_From_CSV\\CSV\\Estimados_DB.csv",header = true, delim = ';');
-    Dados_Geracao   = CSV.read("Data_From_CSV\\CSV\\Geracao_DB.csv",header = true, delim = ';');
+    Dados_Contratos = CSV.read("$path_mode\\CSV\\Contratos_DB.csv",header = true, delim = ';');
+    Dados_Estimados = CSV.read("$path_mode\\CSV\\Estimados_DB.csv",header = true, delim = ';');
+    Dados_Geracao   = CSV.read("$path_mode\\CSV\\Geracao_DB.csv",header = true, delim = ';');
 
-    # struct Struct_regiao
-    #     Norte::AbstractDataFrame
-    #     Sudeste::AbstractDataFrame
-    #     Nordeste::AbstractDataFrame
-    # end
-    # Dados_Contratos_regiao = Struct_regiao(teste_norte,teste_sudeste,teste_nordeste);
     ######## Variaveis vinculadas ao contrato (i)
     Dados_Contratos_regiao = filter(row -> row.Regiao ∈ [regiao], Dados_Contratos)
     Dados_Estimados_regiao = filter(row -> row.Regiao ∈ [regiao], Dados_Estimados)
@@ -134,7 +129,6 @@ function Read_from_CSV(Numero_de_meses,
     ######## Variaveis vinculadas o periodo (t)
     Preco_Spot = convert( Matrix, Dados_Estimados_regiao[1:Numero_de_meses,2:Numero_de_Cenarios_PLD+1]);
     Geracao_Estimada = convert( Matrix, Dados_Geracao[1:Numero_de_meses,1:Numero_de_Cenarios_Geracao]);
-    # Custo_Geracao = Dados_Estimados_regiao[1:Numero_de_meses,3]
     Regiao_PLD = Dados_Estimados_regiao[1:Numero_de_meses,1];
 
     return Preco_Spot,
@@ -146,9 +140,9 @@ function Read_from_CSV(Numero_de_meses,
             q,
             Porcentagem_Portifolio;
 end
-#inacabada
+
 ##################### Parametros exemplo de contrato e pld #######################
-function Example_Parameters(Numero_de_meses, Numero_de_contratos)
+function Metodo_de_otimizacao(Numero_de_meses, Numero_de_contratos)
     Preco_Spot = convert(Matrix{Float64},zeros(Numero_de_meses,1));
     Custo_Geracao = convert(Matrix{Float64},zeros(Numero_de_meses,1));
     Data_Ini = convert(Array{Int64},zeros(Numero_de_contratos,1));
@@ -158,33 +152,7 @@ function Example_Parameters(Numero_de_meses, Numero_de_contratos)
     q = convert(Matrix{Float64},zeros(Numero_de_contratos,1))
     Porcentagem_Portifolio = convert(Matrix{Float64},zeros(Numero_de_contratos,1))
 
-    for t in 1:Numero_de_meses
-        Preco_Spot[t] = 80
-        Custo_Geracao[t] = 10
-    end
-    for i in 1:Numero_de_contratos
-        p[i]= 100;
-        q[i]= 500;
-        Data_Ini[i]= 1;
-        Duracao[i]= rand(1:Numero_de_meses - Data_Ini[i]);
-        Porcentagem_Portifolio[i] = rand();
-    end
-    Porcentagem_Portifolio = Porcentagem_Portifolio./(Porcentagem_Portifolio'*ones(Numero_de_contratos))
-    for i in 1:Numero_de_contratos
-        for t in 1:Numero_de_meses
-            Geracao_Estimada[i,t] = 500 + rand()*50;
-        end
-    end
-    return Preco_Spot,
-            Custo_Geracao,
-            Data_Ini,
-            Duracao,
-            Geracao_Estimada,
-            p,
-            q,
-            Porcentagem_Portifolio;
 end
-#inacabada
 
 
 ######## Retorna 1 se o contrato estiver em vigor e 0 caso contrario ##########
@@ -222,11 +190,15 @@ function Define_Receitas(Numero_de_contratos,
         R_Portifolio_Geradora_cenario_PLD = convert(Matrix{Float64},zeros(Numero_de_Cenarios_PLD,Numero_de_meses));
         Preco_Spot_Medio = (Preco_Spot*ones(Numero_de_Cenarios_PLD))'./size(1:Numero_de_Cenarios_PLD);
 
+    for i in 1:Numero_de_contratos
+        for t in 1:Numero_de_meses
+            h[i,t] = durante_o_contrato(Data_Ini[i],Duracao[i],t);
+        end
+    end
+
     for j in 1:Numero_de_Cenarios_PLD
+
         for i in 1:Numero_de_contratos
-            for t in 1:Numero_de_meses
-                h[i,t] = durante_o_contrato(Data_Ini[i],Duracao[i],t);
-            end
             Serie_temporal_Contratos[i,:]= p[i].*h[i,:]
             R_Comercializadora[i,:] = ((p[i]*ones(Numero_de_meses) - Preco_Spot[:,j]).*q[i]).*h[i,:]
         end
@@ -240,7 +212,6 @@ function Define_Receitas(Numero_de_contratos,
         #fixando os Cenarios de geracao na media por mes
         R_Portifolio_Geradora_cenario_PLD[j,:] = (R_Gerador'*ones(Numero_de_Cenarios_Geracao))'./size(1:Numero_de_Cenarios_Geracao);
     end
-    @show h
     R_Portifolio_Comercializadoradf = DataFrame(hcat(R_Portifolio_Comercializadora'))
     R_Portifolio_Geradora_cenario_PLDdf = DataFrame(hcat(R_Portifolio_Geradora_cenario_PLD'))
     R_Portifolio_Geradora_cenario_Geracaodf = DataFrame(hcat(R_Portifolio_Geradora_cenario_Geracao'))
